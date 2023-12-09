@@ -1,5 +1,5 @@
 import { Show, createSignal } from "solid-js";
-import BarProgress from "./components/barProgress";
+// import BarProgress from "./components/barProgress";
 import { timeFormat, timeToSeconds } from "./utils/";
 import { ICountStates } from "./types";
 
@@ -19,8 +19,13 @@ function App() {
   const countDown = () => {
     const timer = setInterval(() => {
       if (countStates().count === 0) {
-        setCountStates({ ...countStates(), running: false, count: 0 });
         clearInterval(timer);
+        setCountStates({
+          ...countStates(),
+          running: false,
+          count: 0,
+          progress: 0,
+        });
       }
       if (countStates().running === false) {
         clearInterval(timer);
@@ -29,6 +34,8 @@ function App() {
         setCountStates({
           ...countStates(),
           count: countStates().count - 1,
+          progress:
+            100 - (countStates().count / countStates().initialCount) * 100,
         });
       }
     }, 1000);
@@ -38,50 +45,60 @@ function App() {
     <>
       <section class=" grid place-content-center h-screen">
         <Show when={countStates().running && countStates().ready}>
-          <BarProgress {...countStates()} />
+          <div class="h-2 bg-gray-200 rounded-full">
+            <div
+              class="h-full bg-green-500 rounded-full font-digital transition-[width] duration-300"
+              style={{ width: `${countStates().progress}%` }}
+            ></div>
+          </div>
         </Show>
         <div class="flex flex-col bg-zinc-500 rounded-3xl p-12 mb-4">
           <Show
             when={!countStates().ready}
             fallback={
-              <p class="text-8xl text-white mx-auto">
+              <p class="text-8xl counter font-mono text-white mx-auto">
                 {timeFormat(countStates().count)}
               </p>
             }
           >
-            <p class="text-8xl text-white mx-auto">{timeFormat(count())}</p>
+            <p class="text-8xl counter font-digital text-white mx-auto">
+              {timeFormat(count())}
+            </p>
           </Show>
         </div>
         <Show
           when={!countStates().ready && !countStates().running}
           fallback={
             <div class="flex flex-wrap gap-2 justify-center items-center ">
-              <Show
-                when={!countStates().running}
-                fallback={
-                  <button
-                    onClick={() =>
-                      setCountStates({
-                        ...countStates(),
-                        running: !countStates().running,
-                      })
-                    }
-                  >
-                    Pause
-                  </button>
-                }
-              >
-                <button
-                  onClick={() => {
-                    setCountStates({ ...countStates(), running: true });
-                    countDown();
-                  }}
+              {countStates().count !== 0 && (
+                <Show
+                  when={!countStates().running}
+                  fallback={
+                    <button
+                      onClick={() =>
+                        setCountStates({
+                          ...countStates(),
+                          running: !countStates().running,
+                        })
+                      }
+                    >
+                      Pause
+                    </button>
+                  }
                 >
-                  {countStates().initialCount !== countStates().count
-                    ? "Resume"
-                    : "Start"}
-                </button>
-              </Show>
+                  <button
+                    onClick={() => {
+                      if (countStates().count === 0) return;
+                      setCountStates({ ...countStates(), running: true });
+                      countDown();
+                    }}
+                  >
+                    {countStates().initialCount !== countStates().count
+                      ? "Resume"
+                      : "Start"}
+                  </button>
+                </Show>
+              )}
 
               <button
                 onClick={() =>

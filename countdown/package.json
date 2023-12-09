@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "date-fns": "^2.30.0",
+    "progressbar.js": "^1.1.1",
     "solid-js": "^1.8.7"
   },
   "devDependencies": {
